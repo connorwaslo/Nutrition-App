@@ -1,6 +1,17 @@
 import React, { Component } from 'react';
-import { ScrollView } from 'react-native';
+import {ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import LabelSelector from "./LabelSelector";
+import RadioButton from "./RadioButton";
+
+const AddLabel = (props) => (
+  <View style={{ flex: 1, flexDirection: 'row' }}>
+    <TouchableOpacity onPress={props.onPress}>
+      <View style={{ flex: 1, flexDirection: 'row' }}>
+        <Text style={{ margin: 5 }}>(+) Add Label</Text>
+      </View>
+    </TouchableOpacity>
+  </View>
+);
 
 class SelectLabels extends Component {
   constructor(props) {
@@ -13,12 +24,14 @@ class SelectLabels extends Component {
 
     this.state = {
       labels: props.labels,
-      selections: selections
+      selections: selections,
+      typingLabel: false,
+      newLabel: ''
     }
   }
 
   render() {
-    const {selections, labels} = this.state;
+    const {selections, labels, typingLabel} = this.state;
 
     console.log(selections);
     return (
@@ -29,6 +42,13 @@ class SelectLabels extends Component {
                          label={label}
                          onPress={() => this._onPress(i)}/>
         ))}
+
+        {typingLabel ? <TextInput
+          onChange={e => this.setState({ newLabel: e })}
+          onEndEditing={this._submitNewLabel.bind(this)}/>
+          : null}
+
+        <AddLabel onPress={this._addLabel.bind(this)}/>
       </ScrollView>
     )
   }
@@ -39,6 +59,27 @@ class SelectLabels extends Component {
 
     console.log('Pressed', i);
     this.setState({ selections: temp });
+  };
+
+  _addLabel = () => {
+    this.setState({
+      typingLabel: true
+    })
+  }
+
+  _submitNewLabel = () => {
+    let tempSel = this.state.selections;
+    tempSel.push(false);
+
+    let tempLabels = this.state.labels;
+    tempLabels.push(this.state.newLabel);
+
+    this.setState({
+      selections: tempSel,
+      labels: tempLabels,
+      typingLabel: false,
+      newLabel: ''
+    })
   }
 }
 

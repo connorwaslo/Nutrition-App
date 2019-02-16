@@ -1,15 +1,25 @@
 import React from 'react';
+import Clarifai from 'clarifai';
 import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Camera, Permissions } from 'expo';
-import credentials from '../google-vision-creds';
+// import credentials from '../google-vision-creds';
+import credentials from '../creds/clarifai-creds';
 import RadioButton from "../components/RadioButton";
 import LabelSelector from "../components/LabelSelector";
 import SelectLabels from "../components/SelectLabels";
 
-export default class HomeScreen extends React.Component {
+export default class PhotoScreen extends React.Component {
   static navigationOptions = {
     header: null
   };
+
+  constructor() {
+    super();
+
+    this.app = new Clarifai.App({
+      apiKey: credentials.API_KEY
+    });
+  }
 
   state = {
     hasCameraPermission: null,
@@ -19,6 +29,8 @@ export default class HomeScreen extends React.Component {
     isTakingImage: false,
     loading: false
   };
+
+
 
   async componentDidMount() {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
@@ -130,45 +142,24 @@ export default class HomeScreen extends React.Component {
         .finally(async () => {
           // If a photo has just been taken...
           if (this.state.photo) {
-            const body = {
-              requests:[
-                {
-                  image:{
-                    content: this.state.photo.base64,
-                  },
-                  features:[
-                    {
-                      type: 'LABEL_DETECTION',
-                      maxResults: 15,
-                    }
-                  ]
-                },
-              ],
-            };
+            this.app.models.predict(Clarifai.FOOD_MODEL, {
+              base64: this.state.photo.base64
+            }).then((response) => {
+              let concepts = response['outputs'][0]['data']['concepts']
+              let labels = [];
 
-            const key = credentials.API_KEY;
-            const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${key}`, {
-              method: 'POST',
-              headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(body),
+              for (let i = 0; i < concepts.length; i++) {
+                labels.push(concepts[i]['name']);
+              }
+
+              this.setState({
+                labels: labels,
+                loading: false
+              });
+              console.log('Labels:', this.state.labels);
+            }).catch((err) => {
+              console.log('CLARIFAI ERROR:', err)
             });
-            const parsed = await response.json();
-
-            let descriptions = parsed.responses[0].labelAnnotations;
-            let tempLabels = [];
-            for (let i = 0; i < descriptions.length; i++) {
-              tempLabels.push(descriptions[i].description);
-            }
-
-            this.setState({
-              labels: tempLabels,
-              loading: false
-            });
-
-            console.log(this.state.labels);
           }
         });
 
