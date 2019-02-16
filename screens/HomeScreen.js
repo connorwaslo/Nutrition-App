@@ -25,7 +25,7 @@ export default class HomeScreen extends React.Component {
   _renderCamera = () => (
     <Camera
       ref={ref => this.camera = ref }
-      style={{ flex: 1, marginTop: '5%' }}
+      style={{ flex: 1 }}
       type={this.state.type}>
       <View
         style={{
@@ -51,16 +51,19 @@ export default class HomeScreen extends React.Component {
             {' '}Flip{' '}
           </Text>
         </TouchableOpacity>
-        <View style={styles.circle}>
-        <TouchableOpacity
-          onPress={this._snap.bind(this)}
-          style={{
-            flex: 1,
-            flexDirection: 'row',
-            justifyContent: 'center'
-          }}>
-          <Text style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>O</Text>
-        </TouchableOpacity>
+
+        <View style={{ position: 'absolute', left: '45%', right: '45%', bottom: 5 }}>
+          <TouchableOpacity
+            onPress={this._snap.bind(this)}
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'flex-end',
+              textAlign: 'center'
+            }}>
+              <View style={styles.circle} />
+          </TouchableOpacity>
         </View>
       </View>
     </Camera>
@@ -73,6 +76,12 @@ export default class HomeScreen extends React.Component {
         style={{ flex: 1 }}
       />
       { this.state.label ? <Text>{this.state.label}</Text> : null }
+
+      <TouchableOpacity
+        style={{ position: 'absolute', left: 5, top: 5 }}
+        onPress={this._closePic.bind(this)}>
+        <Text style={styles.closePic}>X</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -84,7 +93,7 @@ export default class HomeScreen extends React.Component {
       return <Text>No access to camera</Text>;
     } else {
       return (
-        <View style={{ flex: 1 }}>
+        <View style={styles.container}>
           {!this.state.photo ? this._renderCamera() : this._renderPhoto()}
         </View>
       );
@@ -157,14 +166,30 @@ export default class HomeScreen extends React.Component {
         isTakingImage: false
       })
     }
-  }
+  };
+
+  _closePic = () => {
+    this.setState({ photo: null });
+  };
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: '5%',
+  },
   circle: {
-    width: '25%',
-    height: '25%',
-    borderRadius: 25,
-    color: 'black'
+    height: 48,
+    width: 48,
+    borderRadius: 24,
+    borderWidth: 6,
+    borderColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  closePic: {
+    fontSize: 18,
+    color: 'white',
+    padding: 10
   }
 });
