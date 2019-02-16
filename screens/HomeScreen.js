@@ -1,14 +1,111 @@
 import React from 'react';
+import { Text, View, TouchableOpacity, Image } from 'react-native';
+import { Camera, Permissions } from 'expo';
+
+export default class HomeScreen extends React.Component {
+  state = {
+    hasCameraPermission: null,
+    type: Camera.Constants.Type.back,
+    photo: null
+  };
+
+  async componentDidMount() {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA);
+    this.setState({ hasCameraPermission: status === 'granted' });
+  }
+
+  _renderCamera = () => (
+    <Camera
+      ref={ref => this.camera = ref }
+      style={{ flex: 1 }}
+      type={this.state.type}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: 'transparent',
+          flexDirection: 'row',
+        }}>
+        <TouchableOpacity
+          style={{
+            flex: 0.1,
+            alignSelf: 'flex-end',
+            alignItems: 'center',
+          }}
+          onPress={() => {
+            this.setState({
+              type: this.state.type === Camera.Constants.Type.back
+                ? Camera.Constants.Type.front
+                : Camera.Constants.Type.back,
+            });
+          }}>
+          <Text
+            style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>
+            {' '}Flip{' '}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={this._snap.bind(this)}
+          style={{
+            flex: 0.1,
+            alignSelf: 'flex-end',
+            alignItems: 'center'
+          }}>
+          <Text style={{ fontSize: 32, marginBottom: 10, color: 'white' }}>O</Text>
+        </TouchableOpacity>
+      </View>
+    </Camera>
+  );
+
+  _renderPhoto = () => (
+    <Image
+      source={{ uri: this.state.photo.uri }}
+      style={{ flex: 1 }}
+    />
+  );
+
+  render() {
+    const { hasCameraPermission } = this.state;
+    if (hasCameraPermission === null) {
+      return <View />;
+    } else if (hasCameraPermission === false) {
+      return <Text>No access to camera</Text>;
+    } else {
+      return (
+        <View style={{ flex: 1 }}>
+          {!this.state.photo ? this._renderCamera() : this._renderPhoto()}
+        </View>
+      );
+    }
+  }
+
+  _snap = async () => {
+    if (this.camera) {
+      const options = {
+        quality: 1, base64: false, fixOrientation: false, exif: true
+      };
+
+      await this.camera.takePictureAsync(options)
+        .then((photo) => {
+          console.log(photo);
+          this.setState({ photo: photo });
+        });
+    }
+  }
+}
+
+/*
+import React from 'react';
 import {
   Image,
   Platform,
-  ScrollView,
+  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { WebBrowser } from 'expo';
+import Expo, { WebBrowser } from 'expo';
+import google_creds from '../google-vision-creds';
 
 import { MonoText } from '../components/StyledText';
 
@@ -17,91 +114,96 @@ export default class HomeScreen extends React.Component {
     header: null,
   };
 
+  state = {
+    imageUri: null,
+    label: null
+  };
+
   render() {
-    return (
-      <View style={styles.container}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.welcomeContainer}>
-            <Image
-              source={
-                __DEV__
-                  ? require('../assets/images/robot-dev.png')
-                  : require('../assets/images/robot-prod.png')
-              }
-              style={styles.welcomeImage}
-            />
-          </View>
+    let imageView = null;
+    if (this.state.imageUri) {
+      imageView = (
+        <Image
+          style={{ width: 300, height: 300 }}
+          source={{ uri: this.state.imageUri }}
+        />
+      )
+    }
 
-          <View style={styles.getStartedContainer}>
-            {this._maybeRenderDevelopmentModeWarning()}
-
-            <Text style={styles.getStartedText}>Get started by opening</Text>
-
-            <View style={[styles.codeHighlightContainer, styles.homeScreenFilename]}>
-              <MonoText style={styles.codeHighlightText}>screens/HomeScreen.js</MonoText>
-            </View>
-
-            <Text style={styles.getStartedText}>
-              Change this text and your app will automatically reload.
-            </Text>
-          </View>
-
-          <View style={styles.helpContainer}>
-            <TouchableOpacity onPress={this._handleHelpPress} style={styles.helpLink}>
-              <Text style={styles.helpLinkText}>Help, it didn’t automatically reload!</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-
-        <View style={styles.tabBarInfoContainer}>
-          <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
-
-          <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
-            <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  _maybeRenderDevelopmentModeWarning() {
-    if (__DEV__) {
-      const learnMoreButton = (
-        <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
-          Learn more
-        </Text>
-      );
-
-      return (
-        <Text style={styles.developmentModeText}>
-          Development mode is enabled, your app will be slower but you can use useful development
-          tools. {learnMoreButton}
-        </Text>
-      );
-    } else {
-      return (
-        <Text style={styles.developmentModeText}>
-          You are not in development mode, your app will run at full speed.
+    let labelView = null;
+    if (this.state.label) {
+      labelView = (
+        <Text style={{ margin: 5 }}>
+          {this.state.label}
         </Text>
       );
     }
+
+    return (
+      <SafeAreaView style={styles.container}>
+        {imageView}
+        {labelView}
+        <TouchableOpacity
+          style={{ margin: 5, padding: 5, backgroundColor: '#ddd' }}
+          onPress={this._pickImage}>
+          <Text>take a picture!</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
   }
 
-  _handleLearnMorePress = () => {
-    WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-  };
+  _pickImage = async () => {
+    const {
+      cancelled,
+      uri,
+      base64,
+    } = await Expo.ImagePicker.launchImageLibraryAsync({
+      base64: true,
+    });
+    if (!cancelled) {
+      this.setState({
+        imageUri: uri,
+        label: '(loading...)',
+      });
+    }
 
-  _handleHelpPress = () => {
-    WebBrowser.openBrowserAsync(
-      'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
-    );
-  };
+    const body = {
+      requests:[
+        {
+          image:{
+            content: base64,
+          },
+          features:[
+            {
+              type: 'LABEL_DETECTION',
+              maxResults: 1,
+            }
+          ]
+        },
+      ],
+    };
+
+    const key = google_creds['API_KEY'];
+    const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${key}`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    const parsed = await response.json();
+    this.setState({
+      label: parsed.responses[0].labelAnnotations[0].description,
+    });
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'ios' ? '20vh' : '5%'
   },
   developmentModeText: {
     marginBottom: 20,
@@ -186,3 +288,4 @@ const styles = StyleSheet.create({
     color: '#2e78b7',
   },
 });
+*/
