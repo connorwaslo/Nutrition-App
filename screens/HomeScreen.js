@@ -3,17 +3,19 @@ import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Camera, Permissions } from 'expo';
 import credentials from '../google-vision-creds';
 import RadioButton from "../components/RadioButton";
+import LabelSelector from "../components/LabelSelector";
+import SelectLabels from "../components/SelectLabels";
 
 export default class HomeScreen extends React.Component {
-  /*static navigationOptions = {
+  static navigationOptions = {
     header: null
-  };*/
+  };
 
   state = {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
     photo: null,
-    label: null,
+    labels: [],
     isTakingImage: false,
     loading: false
   };
@@ -76,15 +78,19 @@ export default class HomeScreen extends React.Component {
         source={{ uri: this.state.photo.uri }}
         style={{ flex: 1 }}
       />
-      { this.state.label ? <Text>{this.state.label}</Text> : null }
 
       {this.state.loading ? this._renderLoading() : null}
       <TouchableOpacity
-        style={{ position: 'absolute', left: 5, top: 5 }}
+        style={{ position: 'absolute', left: 5, top: 15 }}
         onPress={this._closePic.bind(this)}>
         <Text style={styles.closePic}>X</Text>
       </TouchableOpacity>
+      {!this.state.loading ? this._renderLabels() : null}
     </View>
+  );
+
+  _renderLabels = () => (
+    <SelectLabels labels={this.state.labels} />
   );
 
   render() {
@@ -116,7 +122,6 @@ export default class HomeScreen extends React.Component {
 
       await this.camera.takePictureAsync(options)
         .then(async (photo) => {
-          console.log(photo);
           this.setState({
             photo: photo,
             loading: true
@@ -151,20 +156,19 @@ export default class HomeScreen extends React.Component {
               body: JSON.stringify(body),
             });
             const parsed = await response.json();
-            console.log(parsed);
-
-            let showDescriptions = '';
 
             let descriptions = parsed.responses[0].labelAnnotations;
+            let tempLabels = [];
             for (let i = 0; i < descriptions.length; i++) {
-              console.log(descriptions[i].description);
-              showDescriptions += descriptions[i].description + ', ';
+              tempLabels.push(descriptions[i].description);
             }
 
             this.setState({
-              label: showDescriptions,
+              labels: tempLabels,
               loading: false
             });
+
+            console.log(this.state.labels);
           }
         });
 
@@ -177,7 +181,7 @@ export default class HomeScreen extends React.Component {
   _closePic = () => {
     this.setState({
       photo: null,
-      label: ''
+      labels: []
     });
   };
 

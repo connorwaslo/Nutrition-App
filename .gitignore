@@ -6,3 +6,5 @@ npm-debug.*
 *.key
 *.mobileprovision
 .idea/*
+google-cloud-vision.json
+google-vision-creds.js
