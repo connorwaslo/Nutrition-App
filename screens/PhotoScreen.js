@@ -1,11 +1,8 @@
 import React from 'react';
 import Clarifai from 'clarifai';
-import { Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Text, View, KeyboardAvoidingView, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Camera, Permissions } from 'expo';
-// import credentials from '../google-vision-creds';
 import credentials from '../creds/clarifai-creds';
-import RadioButton from "../components/RadioButton";
-import LabelSelector from "../components/LabelSelector";
 import SelectLabels from "../components/SelectLabels";
 
 export default class PhotoScreen extends React.Component {
@@ -25,12 +22,10 @@ export default class PhotoScreen extends React.Component {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
     photo: null,
-    labels: [],
+    labels: ['peanut butter'],
     isTakingImage: false,
     loading: false
   };
-
-
 
   async componentDidMount() {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
@@ -85,7 +80,7 @@ export default class PhotoScreen extends React.Component {
   );
 
   _renderPhoto = () => (
-    <View style={{ flex: 1 }}>
+    <KeyboardAvoidingView behavior='padding' style={{ flex: 1 }}>
       <Image
         source={{ uri: this.state.photo.uri }}
         style={{ flex: 1 }}
@@ -98,7 +93,7 @@ export default class PhotoScreen extends React.Component {
         <Text style={styles.closePic}>X</Text>
       </TouchableOpacity>
       {!this.state.loading ? this._renderLabels() : null}
-    </View>
+    </KeyboardAvoidingView>
   );
 
   _renderLabels = () => (
@@ -142,7 +137,7 @@ export default class PhotoScreen extends React.Component {
         .finally(async () => {
           // If a photo has just been taken...
           if (this.state.photo) {
-            this.app.models.predict(Clarifai.FOOD_MODEL, {
+            /*this.app.models.predict(Clarifai.FOOD_MODEL, {
               base64: this.state.photo.base64
             }).then((response) => {
               let concepts = response['outputs'][0]['data']['concepts']
@@ -159,12 +154,13 @@ export default class PhotoScreen extends React.Component {
               console.log('Labels:', this.state.labels);
             }).catch((err) => {
               console.log('CLARIFAI ERROR:', err)
-            });
+            });*/
           }
         });
 
       this.setState({
-        isTakingImage: false
+        isTakingImage: false,
+        loading: false
       })
     }
   };

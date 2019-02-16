@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import {ScrollView, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {ScrollView, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView} from 'react-native';
 import LabelSelector from "./LabelSelector";
 import RadioButton from "./RadioButton";
 
 const AddLabel = (props) => (
   <View style={{ flex: 1, flexDirection: 'row' }}>
-    <TouchableOpacity onPress={props.onPress}>
+    <TouchableOpacity style={{ width: '100%' }} onPress={props.onPress}>
       <View style={{ flex: 1, flexDirection: 'row' }}>
         <Text style={{ margin: 5 }}>(+) Add Label</Text>
       </View>
@@ -33,7 +33,7 @@ class SelectLabels extends Component {
   render() {
     const {selections, labels, typingLabel} = this.state;
 
-    console.log(selections);
+    console.log(labels);
     return (
       <ScrollView style={{ flex: 1, backgroundColor: 'rgba(1, 1, 1, 0.4)' }}>
         {labels.map((label, i) => (
@@ -44,8 +44,9 @@ class SelectLabels extends Component {
         ))}
 
         {typingLabel ? <TextInput
-          onChange={e => this.setState({ newLabel: e })}
-          onEndEditing={this._submitNewLabel.bind(this)}/>
+            autoFocus={true}
+            onChangeText={text => this.setState({newLabel: text})}
+            onSubmitEditing={this._submitNewLabel.bind(this)}/>
           : null}
 
         <AddLabel onPress={this._addLabel.bind(this)}/>
@@ -57,7 +58,6 @@ class SelectLabels extends Component {
     let temp = this.state.selections;
     temp[i] = !temp[i];
 
-    console.log('Pressed', i);
     this.setState({ selections: temp });
   };
 
@@ -65,11 +65,11 @@ class SelectLabels extends Component {
     this.setState({
       typingLabel: true
     })
-  }
+  };
 
   _submitNewLabel = () => {
     let tempSel = this.state.selections;
-    tempSel.push(false);
+    tempSel.push(true);
 
     let tempLabels = this.state.labels;
     tempLabels.push(this.state.newLabel);
@@ -79,7 +79,7 @@ class SelectLabels extends Component {
       labels: tempLabels,
       typingLabel: false,
       newLabel: ''
-    })
+    });
   }
 }
 
