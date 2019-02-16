@@ -1,12 +1,14 @@
 import React from 'react';
 import { Text, View, TouchableOpacity, Image } from 'react-native';
 import { Camera, Permissions } from 'expo';
+import credentials from '../google-vision-creds';
 
 export default class HomeScreen extends React.Component {
   state = {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
-    photo: null
+    photo: null,
+    label: null
   };
 
   async componentDidMount() {
@@ -57,10 +59,13 @@ export default class HomeScreen extends React.Component {
   );
 
   _renderPhoto = () => (
-    <Image
-      source={{ uri: this.state.photo.uri }}
-      style={{ flex: 1 }}
-    />
+    <View style={{ flex: 1 }}>
+      <Image
+        source={{ uri: this.state.photo.uri }}
+        style={{ flex: 1 }}
+      />
+      { this.state.label ? <Text>{this.state.label}</Text> : null }
+    </View>
   );
 
   render() {
@@ -81,13 +86,53 @@ export default class HomeScreen extends React.Component {
   _snap = async () => {
     if (this.camera) {
       const options = {
-        quality: 1, base64: false, fixOrientation: false, exif: true
+        quality: 1, base64: true, fixOrientation: false, exif: true
       };
 
       await this.camera.takePictureAsync(options)
-        .then((photo) => {
+        .then(async (photo) => {
           console.log(photo);
           this.setState({ photo: photo });
+
+          const body = {
+            requests:[
+              {
+                image:{
+                  content: photo.base64,
+                },
+                features:[
+                  {
+                    type: 'LABEL_DETECTION',
+                    maxResults: 30,
+                  }
+                ]
+              },
+            ],
+          };
+
+          const key = credentials.API_KEY;
+          const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${key}`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          });
+          const parsed = await response.json();
+          console.log(parsed);
+
+          let showDescriptions = '';
+
+          let descriptions = parsed.responses[0].labelAnnotations;
+          for (let i = 0; i < descriptions.length; i++) {
+            console.log(descriptions[i].description);
+            showDescriptions += descriptions[i].description + ', ';
+          }
+
+          this.setState({
+            label: showDescriptions
+          });
         });
     }
   }
