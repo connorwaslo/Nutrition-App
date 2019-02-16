@@ -5,16 +5,17 @@ import credentials from '../google-vision-creds';
 import RadioButton from "../components/RadioButton";
 
 export default class HomeScreen extends React.Component {
-  static navigationOptions = {
+  /*static navigationOptions = {
     header: null
-  };
+  };*/
 
   state = {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
     photo: null,
     label: null,
-    isTakingImage: false
+    isTakingImage: false,
+    loading: false
   };
 
   async componentDidMount() {
@@ -77,6 +78,7 @@ export default class HomeScreen extends React.Component {
       />
       { this.state.label ? <Text>{this.state.label}</Text> : null }
 
+      {this.state.loading ? this._renderLoading() : null}
       <TouchableOpacity
         style={{ position: 'absolute', left: 5, top: 5 }}
         onPress={this._closePic.bind(this)}>
@@ -93,7 +95,7 @@ export default class HomeScreen extends React.Component {
       return <Text>No access to camera</Text>;
     } else {
       return (
-        <View style={styles.container}>
+        <View style={{ flex: 1 }}>
           {!this.state.photo ? this._renderCamera() : this._renderPhoto()}
         </View>
       );
@@ -115,7 +117,10 @@ export default class HomeScreen extends React.Component {
       await this.camera.takePictureAsync(options)
         .then(async (photo) => {
           console.log(photo);
-          this.setState({ photo: photo });
+          this.setState({
+            photo: photo,
+            loading: true
+          });
         })
         .finally(async () => {
           // If a photo has just been taken...
@@ -157,7 +162,8 @@ export default class HomeScreen extends React.Component {
             }
 
             this.setState({
-              label: showDescriptions
+              label: showDescriptions,
+              loading: false
             });
           }
         });
@@ -169,15 +175,22 @@ export default class HomeScreen extends React.Component {
   };
 
   _closePic = () => {
-    this.setState({ photo: null });
+    this.setState({
+      photo: null,
+      label: ''
+    });
   };
+
+  _renderLoading = () => (
+    <View style={{ position: 'absolute', left: 5, bottom: 5 }}>
+      <Text style={{ color: 'white' }}>
+        Loading...
+      </Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: '5%',
-  },
   circle: {
     height: 48,
     width: 48,
