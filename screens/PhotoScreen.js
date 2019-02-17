@@ -191,7 +191,7 @@ export default class PhotoScreen extends React.Component {
     }
 
     console.log('Food:', foods);
-    navigate('Nutrition');
+    navigate('Nutrition', { food: foods });
   }
 }
 
