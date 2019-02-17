@@ -23,7 +23,8 @@ class NutritionScreen extends Component {
       quantity: quant,
       descriptions: [],
       isLoading: true,
-      nutriList: []
+      nutriList: [],
+      totalCals: 0
     }
   }
 
@@ -38,27 +39,23 @@ class NutritionScreen extends Component {
         let calsStart = descr.indexOf(': ') + 2;
         let calsEnd = descr.indexOf('kcal');
         let cals = parseFloat(descr.substring(calsStart, calsEnd));
-        console.log('Cals:', cals);
 
         let fatStart = descr.indexOf('Fat: ') + 'Fat: '.length;
         let fatEnd = descr.indexOf(' | Carbs:') - 1;
         let fat = parseFloat(descr.substring(fatStart, fatEnd));
-        console.log('Fat:', fat);
 
         let carbsStart = descr.indexOf('Carbs: ') + 'Carbs: '.length;
         let carbsEnd = descr.indexOf(' | Protein') - 1;
         let carbs = parseFloat(descr.substring(carbsStart, carbsEnd));
-        console.log('Carbs:', carbs);
 
         let proStart = descr.indexOf('Protein: ') + 'Protein: '.length;
         let proEnd = descr.length - 1;
         let protein = parseFloat(descr.substring(proStart, proEnd));
-        console.log('Protein:', protein);
 
         let serving = descr.substring(0, descr.indexOf('-') - 1);
 
         tempDescr.push(result['foods']['food'][0]['food_description']);
-        console.log('Quantity:', this.state.quantity);
+
         let nutrition = {
           food: foodList[i],
           servingSize: serving,
@@ -70,9 +67,12 @@ class NutritionScreen extends Component {
         };
 
         // Add to state
+        let tempCals = this.state.totalCals;
+        tempCals += cals * parseFloat(this.state.quantity[i]);
+
         let tempNutri = this.state.nutriList;
         tempNutri.push(nutrition);
-        this.setState({ nutriList: tempNutri });
+        this.setState({ nutriList: tempNutri, totalCals: tempCals });
 
         if (i === foodList.length - 1) {
           this.setState({
@@ -100,7 +100,6 @@ class NutritionScreen extends Component {
   _renderFoodButtons = () => {
     const {foodList, quantity, descriptions} = this.state;
 
-    console.log(descriptions[0]);
     return foodList.map((food, i) => (
       <FoodButton key={i}
                   index={i}
@@ -113,7 +112,6 @@ class NutritionScreen extends Component {
   };
 
   render() {
-    console.log(this.state.quantity);
     if (this.state.isLoading) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -130,6 +128,7 @@ class NutritionScreen extends Component {
           {this._renderFoodButtons()}
         </ScrollView>
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+          <Text style={{ padding: 15, fontSize: 16 }}>Total Calories: {this.state.totalCals}</Text>
           <Button block primary onPress={this._submitMeal.bind(this)}>
             <Text style={{ textAlign: 'center', color: 'white' }}>Submit Meal</Text>
           </Button>
@@ -139,7 +138,6 @@ class NutritionScreen extends Component {
   }
 
   _submitMeal = () => {
-    console.log('Json:', JSON.stringify(this.state.nutriList));
     // Fetch
     fetch('http://alaradegirmenci.wixsite.com/mysite/_functions/addFoodItem',
       { method: 'POST',
@@ -166,9 +164,13 @@ class NutritionScreen extends Component {
 
       // Also change nutriList to reflect this change
       let tempNutri = this.state.nutriList;
-      tempNutri[index]['servings'] = parseFloat(temp[index]);
+      tempNutri[index]['numServings'] = parseFloat(temp[index]);
+      
+      // Update total calories
+      let totalCals = this.state.totalCals;
+      totalCals += tempNutri[index]['cals'] * change;
 
-      this.setState({ quantity: temp, nutriList: tempNutri });
+      this.setState({ totalCals: totalCals, quantity: temp, nutriList: tempNutri });
     }
   }
 }
