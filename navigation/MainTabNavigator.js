@@ -4,11 +4,13 @@ import { createStackNavigator, createBottomTabNavigator } from 'react-navigation
 
 import TabBarIcon from '../components/TabBarIcon';
 import PhotoScreen from '../screens/PhotoScreen';
+import NutritionScreen from '../screens/NutritionScreen';
 import LinksScreen from '../screens/LinksScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 const HomeStack = createStackNavigator({
   Home: PhotoScreen,
+  Nutrition: NutritionScreen
 });
 
 HomeStack.navigationOptions = {

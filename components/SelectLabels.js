@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import {ScrollView, Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView} from 'react-native';
+import {ScrollView, Text, TextInput, TouchableOpacity, View, Keyboard} from 'react-native';
+import {Button} from 'native-base';
 import LabelSelector from "./LabelSelector";
-import RadioButton from "./RadioButton";
+
 
 const AddLabel = (props) => (
   <View style={{ flex: 1, flexDirection: 'row' }}>
@@ -26,31 +27,67 @@ class SelectLabels extends Component {
       labels: props.labels,
       selections: selections,
       typingLabel: false,
-      newLabel: ''
+      newLabel: '',
+      showSubmit: true
     }
   }
 
+  componentDidMount() {
+    this.keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      this._keyboardDidShow
+    );
+    this.keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      this._keyboardDidHide
+    );
+  }
+
+  componentWillUnmount() {
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
+  }
+
+  _keyboardDidShow = () => {
+    this.setState({ showSubmit: false });
+  };
+
+  _keyboardDidHide = () => {
+    this.setState({ showSubmit: true });
+  };
+
+  _renderSubmit = () => (
+    <View style={{ width: '100%' }}>
+      <Button block primary onPress={this._submitFood.bind(this)}>
+        <Text style={{ color: 'white' }}>Submit</Text>
+      </Button>
+    </View>
+  );
+
   render() {
-    const {selections, labels, typingLabel} = this.state;
+    const {selections, labels, typingLabel, showSubmit} = this.state;
 
-    console.log(labels);
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: 'rgba(1, 1, 1, 0.4)' }}>
-        {labels.map((label, i) => (
-          <LabelSelector key={i}
-                         selected={selections[i]}
-                         label={label}
-                         onPress={() => this._onPress(i)}/>
-        ))}
+      <View style={{ flex: 1, backgroundColor: 'rgba(1, 1, 1, 0.4)' }}>
+        <ScrollView style={{ flex: 1 }}>
+          {labels.map((label, i) => (
+            <LabelSelector key={i}
+                           selected={selections[i]}
+                           label={label}
+                           onPress={() => this._onPress(i)}/>
+          ))}
 
-        {typingLabel ? <TextInput
-            autoFocus={true}
-            onChangeText={text => this.setState({newLabel: text})}
-            onSubmitEditing={this._submitNewLabel.bind(this)}/>
-          : null}
+          {typingLabel ? <TextInput
+              autoFocus={true}
+              onChangeText={text => this.setState({newLabel: text})}
+              onSubmitEditing={this._submitNewLabel.bind(this)}/>
+            : null}
 
-        <AddLabel onPress={this._addLabel.bind(this)}/>
-      </ScrollView>
+          <AddLabel onPress={this._addLabel.bind(this)}/>
+        </ScrollView>
+
+        {showSubmit ? this._renderSubmit() : null}
+      </View>
     )
   }
 
@@ -81,6 +118,13 @@ class SelectLabels extends Component {
       newLabel: ''
     });
   }
+
+  // Submit food to next screen to be analyzed fatsecret API
+  _submitFood = () => {
+    const {selections, labels} = this.state;
+
+    this.props.submit(selections, labels);
+  };
 }
 
 export default SelectLabels;

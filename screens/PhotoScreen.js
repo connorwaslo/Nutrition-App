@@ -97,7 +97,7 @@ export default class PhotoScreen extends React.Component {
   );
 
   _renderLabels = () => (
-    <SelectLabels labels={this.state.labels} />
+    <SelectLabels labels={this.state.labels} submit={this._submitFood.bind(this)}/>
   );
 
   render() {
@@ -179,6 +179,20 @@ export default class PhotoScreen extends React.Component {
       </Text>
     </View>
   );
+
+  _submitFood = (selections, labels) => {
+    const { navigate } = this.props.navigation;
+
+    let foods = [];
+    for (let i = 0; i < selections.length; i++) {
+      if (selections[i]) {
+        foods.push(labels[i]);
+      }
+    }
+
+    console.log('Food:', foods);
+    navigate('Nutrition');
+  }
 }
 
 const styles = StyleSheet.create({
