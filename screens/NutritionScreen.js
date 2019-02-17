@@ -164,7 +164,11 @@ class NutritionScreen extends Component {
       temp[index] += change;
       temp[index] = temp[index].toString();
 
-      this.setState({ quantity: temp });
+      // Also change nutriList to reflect this change
+      let tempNutri = this.state.nutriList;
+      tempNutri[index]['servings'] = parseFloat(temp[index]);
+
+      this.setState({ quantity: temp, nutriList: tempNutri });
     }
   }
 }
