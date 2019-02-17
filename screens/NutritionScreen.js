@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, ScrollView, Text, StyleSheet} from 'react-native';
+import {Button} from 'native-base';
 import {searchFood} from "../api/fatsecret";
 import FoodButton from '../components/FoodButton';
 
@@ -21,7 +22,8 @@ class NutritionScreen extends Component {
       foodList: food,
       quantity: quant,
       descriptions: [],
-      isLoading: true
+      isLoading: true,
+      nutriList: []
     }
   }
 
@@ -31,7 +33,41 @@ class NutritionScreen extends Component {
 
     for (let i = 0; i < foodList.length; i++) {
       await searchFood(foodList[i]).then((result) => {
+        let descr = result['foods']['food'][0]['food_description'];
+
+        let calsStart = descr.indexOf(': ') + 2;
+        let calsEnd = descr.indexOf('kcal');
+        let cals = parseFloat(descr.substring(calsStart, calsEnd));
+        console.log('Cals:', cals);
+
+        let fatStart = descr.indexOf('Fat: ') + 'Fat: '.length;
+        let fatEnd = descr.indexOf(' | Carbs:') - 1;
+        let fat = parseFloat(descr.substring(fatStart, fatEnd));
+        console.log('Fat:', fat);
+
+        let carbsStart = descr.indexOf('Carbs: ') + 'Carbs: '.length;
+        let carbsEnd = descr.indexOf(' | Protein') - 1;
+        let carbs = parseFloat(descr.substring(carbsStart, carbsEnd));
+        console.log('Carbs:', carbs);
+
+        let proStart = descr.indexOf('Protein: ') + 'Protein: '.length;
+        let proEnd = descr.length - 1;
+        let protein = parseFloat(descr.substring(proStart, proEnd));
+        console.log('Protein:', protein);
+
         tempDescr.push(result['foods']['food'][0]['food_description']);
+        let nutrition = {
+          food: foodList[i],
+          cals: cals,
+          fat: fat,
+          carbs: carbs,
+          protein: protein
+        };
+
+        // Add to state
+        let tempNutri = this.state.nutriList;
+        tempNutri.push(nutrition);
+        this.setState({ nutriList: tempNutri });
 
         if (i === foodList.length - 1) {
           this.setState({
@@ -72,6 +108,7 @@ class NutritionScreen extends Component {
   };
 
   render() {
+    console.log(this.state.nutriList);
     if (this.state.isLoading) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -81,11 +118,18 @@ class NutritionScreen extends Component {
     }
 
     return (
-        <View style={{ flex: 1, marginTop: '5%' }}>
+      <View style={{ flex: 1}}>
+        <ScrollView style={{ flex: 1, marginTop: '5%', marginBottom: '5%' }}>
           {this._checkForFood()}
 
           {this._renderFoodButtons()}
+        </ScrollView>
+        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+          <Button block primary onPress={() => {}}>
+            <Text style={{ textAlign: 'center', color: 'white' }}>Submit Meal</Text>
+          </Button>
         </View>
+      </View>
     )
   }
 
