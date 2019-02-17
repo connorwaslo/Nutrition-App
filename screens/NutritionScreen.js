@@ -55,13 +55,18 @@ class NutritionScreen extends Component {
         let protein = parseFloat(descr.substring(proStart, proEnd));
         console.log('Protein:', protein);
 
+        let serving = descr.substring(0, descr.indexOf('-') - 1);
+
         tempDescr.push(result['foods']['food'][0]['food_description']);
+        console.log('Quantity:', this.state.quantity);
         let nutrition = {
           food: foodList[i],
+          servingSize: serving,
           cals: cals,
           fat: fat,
           carbs: carbs,
-          protein: protein
+          protein: protein,
+          numServings: parseFloat(this.state.quantity[i])
         };
 
         // Add to state
@@ -108,7 +113,7 @@ class NutritionScreen extends Component {
   };
 
   render() {
-    console.log(this.state.nutriList);
+    console.log(this.state.quantity);
     if (this.state.isLoading) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -125,13 +130,23 @@ class NutritionScreen extends Component {
           {this._renderFoodButtons()}
         </ScrollView>
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
-          <Button block primary onPress={() => {}}>
+          <Button block primary onPress={this._submitMeal.bind(this)}>
             <Text style={{ textAlign: 'center', color: 'white' }}>Submit Meal</Text>
           </Button>
         </View>
       </View>
     )
   }
+
+  _submitMeal = () => {
+    console.log('Json:', JSON.stringify(this.state.nutriList));
+    // Fetch
+    fetch('http://alaradegirmenci.wixsite.com/mysite/_functions/addFoodItem',
+      { method: 'POST',
+      body: JSON.stringify(this.state.nutriList)})
+      .then((response) => console.log(response))
+      .catch((err) => console.log(err));
+  };
 
   _updateQuant = (index, text) => {
     let temp = this.state.quantity;
