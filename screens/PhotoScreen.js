@@ -1,6 +1,6 @@
 import React from 'react';
 import Clarifai from 'clarifai';
-import { Text, View, KeyboardAvoidingView, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Text, View, KeyboardAvoidingView, TouchableOpacity, Image, StyleSheet, Platform } from 'react-native';
 import { Camera, Permissions } from 'expo';
 import credentials from '../creds/clarifai-creds';
 import SelectLabels from "../components/SelectLabels";
@@ -57,12 +57,14 @@ export default class PhotoScreen extends React.Component {
             });
           }}>
           <Text
-            style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>
+            style={[{ fontSize: 18, color: 'white' },
+              Platform.OS === 'ios' ? { marginLeft: 10, marginBottom: 40 } : { marginBottom: 10 }]}>
             {' '}Flip{' '}
           </Text>
         </TouchableOpacity>
 
-        <View style={{ position: 'absolute', left: '45%', right: '45%', bottom: 5 }}>
+        <View style={[{ position: 'absolute', left: '45%', right: '45%' },
+                    Platform.OS === 'ios' ? { bottom: 50 } : { bottom: 20 }]}>
           <TouchableOpacity
             onPress={this._snap.bind(this)}
             style={{
@@ -88,7 +90,7 @@ export default class PhotoScreen extends React.Component {
 
       {this.state.loading ? this._renderLoading() : null}
       <TouchableOpacity
-        style={{ position: 'absolute', left: 5, top: 15 }}
+        style={Platform.OS === 'ios' ? { position: 'absolute', left: 10, top: 35 } : { position: 'absolute', left: 5, top: 30 }}
         onPress={this._closePic.bind(this)}>
         <Text style={styles.closePic}>X</Text>
       </TouchableOpacity>
@@ -168,7 +170,7 @@ export default class PhotoScreen extends React.Component {
   };
 
   _renderLoading = () => (
-    <View style={{ position: 'absolute', left: 5, bottom: 5 }}>
+    <View style={[{ position: 'absolute' }, Platform.OS === 'ios' ? { left: 15, bottom: 35 } : { left: 5, bottom: 5 }]}>
       <Text style={{ color: 'white' }}>
         Loading...
       </Text>
@@ -201,7 +203,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   closePic: {
-    fontSize: 18,
+    fontSize: 22,
     color: 'white',
     padding: 10
   }

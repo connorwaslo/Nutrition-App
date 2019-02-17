@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, ScrollView, Text, StyleSheet} from 'react-native';
+import {View, ScrollView, Text, Platform} from 'react-native';
 import {Button} from 'native-base';
 import {searchFood} from "../api/fatsecret";
 import FoodButton from '../components/FoodButton';
@@ -121,13 +121,14 @@ class NutritionScreen extends Component {
     }
 
     return (
-      <View style={{ flex: 1}}>
-        <ScrollView style={{ flex: 1, marginTop: '5%', marginBottom: '5%' }}>
+      <View style={{ flex: 1 }}>
+        <ScrollView style={[{ flex: 1, marginBottom: '5%' }, Platform.OS === 'ios' ? { marginTop: '13%' } : { marginTop: '5%' }]}>
           {this._checkForFood()}
 
           {this._renderFoodButtons()}
         </ScrollView>
-        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+        <View style={[{ position: 'absolute', left: 0, right: 0},
+                      Platform.OS === 'ios' ? { bottom: 25 } : { bottom: 0 }]}>
           <Text style={{ padding: 15, fontSize: 16 }}>Total Calories: {this.state.totalCals}</Text>
           <Button block primary onPress={this._submitMeal.bind(this)}>
             <Text style={{ textAlign: 'center', color: 'white' }}>Submit Meal</Text>
