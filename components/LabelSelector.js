@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import RadioButton from './RadioButton';
+import Hr from "./Hr";
 
 const LabelSelector = (props) => (
   <View style={{ flex: 1 }}>
@@ -13,7 +14,7 @@ const LabelSelector = (props) => (
       </TouchableOpacity>
     </View>
 
-    <View style={{ margin: 4, borderBottomColor: 'black', borderBottomWidth: StyleSheet.hairlineWidth }} />
+    <Hr/>
   </View>
 );
 
