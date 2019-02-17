@@ -6,6 +6,6 @@
 3. App stores image and food data into Firebase (database) to be used by web app
 
 ### Web App
-1. User logs in with firebase (we can set this up at the end)
-2. Loads data for user: recent images and food data
-3. Builds pages that show user's food consumption and trends
+1. User logs in with Wix
+2. Loads data for user: amount of each macro (calories, carbs, fat, and protein) consumed since using the app
+3. Personalized profile for each user: outlines goals, goal date, motivation, and recommendation on how to reach goal (based on diet patterns) as well as progress chart
