@@ -22,7 +22,7 @@ export default class PhotoScreen extends React.Component {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
     photo: null,
-    labels: ['peanut butter'],
+    labels: [],
     isTakingImage: false,
     loading: false
   };
@@ -137,7 +137,7 @@ export default class PhotoScreen extends React.Component {
         .finally(async () => {
           // If a photo has just been taken...
           if (this.state.photo) {
-            /*this.app.models.predict(Clarifai.FOOD_MODEL, {
+            this.app.models.predict(Clarifai.FOOD_MODEL, {
               base64: this.state.photo.base64
             }).then((response) => {
               let concepts = response['outputs'][0]['data']['concepts']
@@ -154,14 +154,9 @@ export default class PhotoScreen extends React.Component {
               console.log('Labels:', this.state.labels);
             }).catch((err) => {
               console.log('CLARIFAI ERROR:', err)
-            });*/
+            });
           }
         });
-
-      this.setState({
-        isTakingImage: false,
-        loading: false
-      })
     }
   };
 
