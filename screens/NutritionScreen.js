@@ -139,21 +139,25 @@ class NutritionScreen extends Component {
   }
 
   _submitMeal = () => {
+    const {nutriList} = this.state;
     // Fetch
-    fetch('http://alaradegirmenci.wixsite.com/mysite/_functions/addFoodItem',
-      { method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(this.state.nutriList)
-      })
-      .then((response) => {
-        console.log(response);
-        // Just head back to photo screen
-        this.props.navigation.navigate('Home');
-      })
-      .catch((err) => console.log(err))
+    for (let i = 0; i < nutriList.length; i++) {
+      fetch('http://alaradegirmenci.wixsite.com/mysite/_functions/addFoodItem',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(nutriList[i])
+        })
+        .then((response) => {
+          console.log(response);
+          // Just head back to photo screen
+          this.props.navigation.navigate('Home');
+        })
+        .catch((err) => console.log(err))
+    }
   };
 
   _updateQuant = (index, text) => {
