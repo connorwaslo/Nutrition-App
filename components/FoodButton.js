@@ -1,29 +1,45 @@
-import React from 'react';
-import {View, Text, TouchableOpacity} from 'react-native';
+import React, {Component} from 'react';
+import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import Hr from "./Hr";
 
-const FoodButton = (props) => (
-  <View style={{ height: '10%' }}>
-    <View style={{ flex: 1 }}>
-      <TouchableOpacity style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between',
-        padding: 15, width: '100%' }} onPress={() => {}}>
-        <View style={{ textAlign: 'left', left: 0 }}>
-          <Text>{props.food}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', textAlign: 'right', right: 0 }}>
-          <TouchableOpacity style={{ paddingRight: 10 }} onPress={() => props.change(props.index, 1)}>
-            <Text>+</Text>
-          </TouchableOpacity>
-          <Text>{props.quantity}</Text>
-          <TouchableOpacity style={{ paddingLeft: 10 }} onPress={() => props.change(props.index, -1)}>
-            <Text>-</Text>
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    </View>
+class FoodButton extends Component {
+  /*constructor(props) {
+    super(props);
 
-    <Hr/>
-  </View>
-);
+    this.state = {
+      text: props.quantity
+    }
+  }*/
+
+  render() {
+    return (
+      <View style={{ height: '20%' }}>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between',
+            padding: 15, width: '100%' }} onPress={() => {}}>
+            <View style={{ textAlign: 'left', left: 0 }}>
+              <Text>{this.props.food}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', textAlign: 'right', right: 0 }}>
+              <TouchableOpacity style={{ paddingRight: 10 }} onPress={() => this.props.change(this.props.index, 1)}>
+                <Text>+</Text>
+              </TouchableOpacity>
+              <TextInput
+                onChangeText={text => this.props.updateQuant(this.props.index, text)}
+                value={this.props.quantity}/>
+              <TouchableOpacity style={{ paddingLeft: 10 }} onPress={() => this.props.change(this.props.index, -1)}>
+                <Text>-</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={{ textAlign: 'left' }}>{this.props.description}</Text>
+
+        <Hr/>
+      </View>
+    )
+  }
+}
 
 export default FoodButton;

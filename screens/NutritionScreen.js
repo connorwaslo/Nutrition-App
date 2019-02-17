@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import {Container} from 'native-base'
+import {searchFood} from "../api/fatsecret";
 import FoodButton from '../components/FoodButton';
 
 class NutritionScreen extends Component {
@@ -14,12 +14,34 @@ class NutritionScreen extends Component {
     let food = props.navigation.getParam('food', []);
     let quant = [];
     for (let i = 0; i < food.length; i++) {
-      quant.push(1);
+      quant.push('1');
     }
 
     this.state = {
       foodList: food,
-      quantity: quant
+      quantity: quant,
+      descriptions: [],
+      isLoading: true
+    }
+  }
+
+  async componentDidMount() {
+    const {foodList} = this.state;
+    let tempDescr = [];
+
+    for (let i = 0; i < foodList.length; i++) {
+      await searchFood(foodList[i]).then((result) => {
+        tempDescr.push(result['foods']['food'][0]['food_description']);
+
+        if (i === foodList.length - 1) {
+          this.setState({
+            descriptions: tempDescr,
+            isLoading: false
+          });
+        }
+      }).catch((err) => {
+        console.log("Can't find that food...", err);
+      });
     }
   }
 
@@ -35,14 +57,29 @@ class NutritionScreen extends Component {
   };
 
   _renderFoodButtons = () => {
-    const {foodList, quantity} = this.state;
+    const {foodList, quantity, descriptions} = this.state;
 
+    console.log(descriptions[0]);
     return foodList.map((food, i) => (
-      <FoodButton key={i} index={i} food={food} quantity={quantity[i]} change={this._changeQuantity.bind(this)}/>
+      <FoodButton key={i}
+                  index={i}
+                  food={food}
+                  quantity={quantity[i]}
+                  description={descriptions[i]}
+                  updateQuant={this._updateQuant.bind(this)}
+                  change={this._changeQuantity.bind(this)}/>
     ));
   };
 
   render() {
+    if (this.state.isLoading) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ textAlign: 'center' }}>Loading...</Text>
+        </View>
+      )
+    }
+
     return (
         <View style={{ flex: 1, marginTop: '5%' }}>
           {this._checkForFood()}
@@ -52,23 +89,25 @@ class NutritionScreen extends Component {
     )
   }
 
+  _updateQuant = (index, text) => {
+    let temp = this.state.quantity;
+
+    temp[index] = text;
+
+    this.setState({quantity: temp});
+  };
+
   _changeQuantity = (index, change) => {
     let temp = this.state.quantity;
 
-    if (temp[index] + change >= 0) {
+    if (parseFloat(temp[index]) + change >= 0) {
+      temp[index] = parseFloat(temp[index]);
       temp[index] += change;
+      temp[index] = temp[index].toString();
 
       this.setState({ quantity: temp });
     }
   }
 }
-
-const styles = StyleSheet.create({
-  emptyText: {
-    textAlign: 'center',
-    alignItems: 'center',
-    top: 100
-  }
-});
 
 export default NutritionScreen;
